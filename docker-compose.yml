@@ -1,0 +1,50 @@
+version: '3.7'
+services:
+  # Service untuk backend (Flask)
+  backend:
+    build:
+      context: ./backend
+    container_name: flask_container
+    ports:
+      - "5000:5000"
+    # Koneksi ke service db
+    depends_on:
+      - db
+    environment:
+      # Variabel environment untuk koneksi ke database
+      - DB_HOST=db
+      - DB_NAME=test_db
+      - DB_USER=student
+      - DB_PASSWORD=password
+
+  # Service untuk frontend (React)
+  frontend:
+    build:
+      context: ./frontend/my-react-cc-app
+    container_name: react_container
+    ports:
+      - "3000:80"
+    # Koneksi ke service backend
+    depends_on:
+      - backend
+
+  # Service untuk database (PostgreSQL)
+  db:
+    image: postgres:12-alpine
+    container_name: postgres_container
+    environment:
+      # Variabel environment untuk koneksi ke database
+      - POSTGRES_DB=test_db
+      - POSTGRES_USER=student
+      - POSTGRES_PASSWORD=password
+    ports:
+      - "5432:5432"
+    # Volume untuk menyimpan data database
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      # File init.sql untuk menginisialisasi database
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+# Volume untuk menyimpan data database
+volumes:
+  db_data:
